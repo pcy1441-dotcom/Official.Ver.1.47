@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PINEAPPLE MYSTERY - FINAL</title>
+<style>
+  :root { 
+    --bg:#050505; --accent:#f4d03f; --red:#cc0000; --blue:#2b57ff; --green:#28a745;
+    --kiwi:#00ff00; --bberry:#4facfe; --pink:#ff69b4; --gold:#b8860b;
+  }
+  body{font-family:'Courier New',monospace;background:var(--bg);color:#e0e0e0;margin:0;text-align:center;transition:.8s;height:100vh;overflow:hidden}
+  body.kiwi-mode{--accent:var(--kiwi);color:var(--kiwi)}
+  body.blueberry-mode{--accent:var(--bberry);color:#fff}
+  body.eden-active{background:#fff!important;color:#000!important}
+  body.equinox-mode{background:#111!important;color:#fff!important}
+
+  body.equinox-mode .t-top{background:#fff!important;color:#000!important}
+  body.equinox-mode .t-bottom{background:#000!important;color:#fff!important;border-top:1px solid #333}
+
+  .equinox-text{
+    font-size:50px;font-weight:900;
+    background:linear-gradient(135deg,#fff 50%,#000 50%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+
+  .ticker-wrap{width:100%;overflow:hidden;background:var(--accent);color:#000;
+    padding:5px 0;font-weight:900;position:fixed;z-index:100;top:0}
+  .t-bottom{top:auto;bottom:0}
+  .ticker{display:inline-block;white-space:nowrap;animation:ticker 30s linear infinite}
+  @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  .wrapper{height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+  .card{background:rgba(15,15,15,.95);padding:30px;border-radius:20px;
+    border:1px solid #333;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none}
+
+  .btn{background:#111;color:#fff;border:1px solid #333;padding:15px;border-radius:8px;
+    cursor:pointer;width:100%;margin-top:10px;font-weight:bold}
+
+  #debug-panel{max-height:200px;overflow-y:auto;margin-top:15px;text-align:left;
+    font-size:11px;border:1px dashed var(--accent);padding:10px}
+  .p-setting{margin-bottom:8px;border-bottom:1px solid #222;padding-bottom:5px;
+    display:flex;justify-content:space-between}
+  select{background:#000;color:var(--accent);border:1px solid #333;font-size:10px}
+
+  #role{font-size:45px;font-weight:900}
+  #skill{font-size:28px;font-weight:bold}
+  .sk-gun{-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background:linear-gradient(45deg,#f00,#00f)}
+  .sk-pink{color:var(--pink)}
+  .sk-gold{color:var(--gold)}
+  .sk-eden{color:#f00;text-shadow:0 0 10px rgba(255,0,0,.5)}
+  .sk-bberry-devil{color:var(--bberry);font-style:italic}
+
+  #log-box{display:none;text-align:left;background:#000;padding:15px;
+    font-size:13px;color:var(--kiwi);border:1px solid var(--kiwi);margin-top:15px}
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap t-top"><div class="ticker">PINEAPPLE SYSTEM ONLINE 0217 🍍 CORE SECURED 🍍</div></div>
+
+<div id="h-screen" style="display:none;position:fixed;width:100%;height:100%;background:#000;z-index:200;display:flex;flex-direction:column;justify-content:center;align-items:center">
+  <div style="color:#fff;font-weight:bold">INITIALIZING SYSTEM...</div>
+  <div style="width:200px;height:3px;background:#222;margin-top:15px">
+    <div id="p-bar" style="width:0%;height:100%;background:#fff"></div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div id="menu" class="card" style="display:block">
+    <h1 style="color:var(--accent);letter-spacing:5px">PINEAPPLE</h1>
+    <p style="font-size:10px;color:#555">DOMINANT SYSTEM</p>
+    PLAYER: <input type="number" id="pCount" min="4" max="20" value="6"
+      onchange="updateAdminUI()" style="background:none;border:none;border-bottom:1px solid #444;color:#fff;width:45px;text-align:center">
+    <button onclick="bootSystem()" class="btn" style="color:var(--accent)">START SYSTEM</button>
+
+    <div id="debug-panel" style="display:none">
+      TYPE:
+      <select id="forceType">
+        <option value="none">RANDOM</option>
+        <option value="Standard">Standard</option>
+        <option value="Chillsear">Chillsear</option>
+        <option value="Zombie">Zombie</option>
+        <option value="Eden">Eden</option>
+      </select>
+      <div id="p-list"></div>
+    </div>
+    <span onclick="openAdmin()" style="font-size:10px;color:#1a1a1a;cursor:pointer">[ADMIN]</span>
+  </div>
+
+  <div id="equinox-screen" class="card">
+    <div class="equinox-text">EQUINOX</div>
+    <button onclick="location.reload()" class="btn">RETURN</button>
+  </div>
+
+  <div id="draw-area" class="card">
+    <div id="pNum" style="font-size:22px;color:#888">PLAYER 1</div>
+    <button onclick="reveal()" class="btn" style="background:var(--red);height:80px">ACCESS ROLE</button>
+  </div>
+
+  <div id="result" class="card" style="background:#fff;color:#111">
+    <div id="role"></div>
+    <div id="skill"></div>
+    <div id="desc"></div>
+    <button onclick="next()" class="btn" style="background:#000">CONFIRM</button>
+  </div>
+
+  <div id="final-screen" class="card">
+    <div id="fType" style="font-size:40px;font-weight:900"></div>
+    <div id="fDesc"></div>
+    <button onclick="checkLog()" class="btn">VIEW DATA LOG</button>
+    <div id="log-box"></div>
+    <button onclick="location.reload()" class="btn" style="border:none;color:#444">REBOOT</button>
+  </div>
+</div>
+
+<div class="ticker-wrap t-bottom"><div class="ticker">PINEAPPLE CORP 🍍 0217 🍍 EQUINOX 619 🍍</div></div>
+
+<script>
+const skills={머더:[{n:"방탄",d:"2목숨"},{n:"가방",d:"1명 한정 생존자를 죽였을 때 생존자는 살아있는 사람처럼 행동하다가 나중에 죽게시켜야 합니다."},{n:"총잡이",d:"보안관식 처치(어깨터치)",s:"sk-gun"}],
+보안관:[{n:"강인한",d:"2목숨"},{n:"마피아",d:"모두를 죽이세요.",s:"sk-gold"}],
+의사:[{n:"자가치유",d:"1회"}],
+시민:[{n:"스파이",d:"시민이나 보안관을 죽이면 최대 2목숨까지 증가하는 대신, 머더를 죽이면 자기는 죽는 대신에 시민이 즉시 승리합니다. 만약 머더를 제외하고 모든 생존자를 죽였다면 스파이의 승리로 게임이 마무리 됩니다.",s:"sk-gold"},{n:"퍼블win",d:"첫번째로 사망하면 시민이 승리합니다.",s:"sk-pink"},{n:"패링",d:"1회 방어"}]};
+
+const mTypes=[
+{n:"Standard",w:59,d:"기본",c:"var(--red)"},
+{n:"Chillsear",w:30,d:"치료 불가",c:"#87CEEB"},
+{n:"Zombie",w:10,d:"감염",c:"#32CD32"},
+{n:"Eden",w:1,d:"머더 5목숨",c:"#000"},
+{n:"Crying Devil",w:0,d:"ADMIN ONLY",c:"#4facfe"}
+];
+
+let tP,cur,rls,aS,rMT,log=[];
+
+function hideAll(){document.querySelectorAll(".card").forEach(c=>c.style.display="none")}
+
+function openAdmin(){
+  const pw=prompt("CODE:");
+  if(pw==="619"){hideAll();document.getElementById("equinox-screen").style.display="block";document.body.className="equinox-mode";return}
+  if(pw==="9245"||pw==="1441"){
+    document.body.className=pw==="9245"?"kiwi-mode":"blueberry-mode";
+    document.getElementById("debug-panel").style.display="block";
+    const ft=document.getElementById("forceType");
+    if(pw==="1441"&&!ft.querySelector('[value="Crying Devil"]')){
+      ft.insertAdjacentHTML("beforeend",'<option value="Crying Devil">Crying Devil</option>');
+    }
+    updateAdminUI();
+  }
+}
+
+function updateAdminUI(){
+  const list=document.getElementById("p-list");
+  list.innerHTML="";
+  for(let i=0;i<pCount.value;i++){
+    list.innerHTML+=`P${i+1}
+    <select id="p${i}r"><option value="none">RAND</option><option>머더</option><option>보안관</option><option>의사</option><option>시민</option></select>
+    <select id="p${i}s"><option value="none">RAND</option><option>방탄</option><option>강인한</option><option>자가치유</option><option>스파이</option></select><br>`;
+  }
+}
+
+function bootSystem(){
+  document.getElementById("h-screen").style.display="flex";
+  let p=0;const iv=setInterval(()=>{p+=10;pBar.style.width=p+"%";if(p>=100){clearInterval(iv);setup()}},50)
+}
+
+function setup(){
+  document.body.classList.remove("eden-active");
+  hideAll();hScreen.style.display="none";
+  tP=+pCount.value;rls=new Array(tP);aS=new Array(tP);
+
+  const ft=forceType.value;
+  if(ft!=="none") rMT=mTypes.find(t=>t.n===ft);
+  else{
+    const pool=mTypes.filter(t=>t.w>0);
+    let r=Math.random()*pool.reduce((s,t)=>s+t.w,0);
+    for(const t of pool){if((r-=t.w)<0){rMT=t;break}}
+  }
+
+  for(let i=0;i<tP;i++){
+    const sr=document.getElementById(`p${i}r`)?.value;
+    const ss=document.getElementById(`p${i}s`)?.value;
+    if(sr&&sr!=="none") rls[i]=sr;
+    if(ss&&ss!=="none"){
+      const pool=skills[sr]||[];
+      aS[i]=pool.find(s=>s.n===ss)||null;
+    }
+  }
+
+  if(!rls.includes("머더")) rls[Math.random()*tP|0]="머더";
+  if(rMT.n==="Crying Devil") rls=rls.map(r=>r==="머더"?r:"보안관");
+  rls=rls.map(r=>r||"시민");
+
+  aS=aS.map((s,i)=>{
+    if(s)return s;
+    if(rls[i]==="머더"){
+      if(rMT.n==="Eden")return{n:"Eden Protocol",d:"5목숨",s:"sk-eden"};
+      if(rMT.n==="Crying Devil")return{n:"Crying Devil",d:"ADMIN",s:"sk-bberry-devil"};
+      return skills.머더[Math.random()*3|0];
+    }
+    return skills[rls[i]][Math.random()*skills[rls[i]].length|0];
+  });
+
+  log=[`MODE: ${rMT.n}`,...rls.map((r,i)=>`P${i+1}: ${r} / ${aS[i].n}`)];
+  cur=0;drawArea.style.display="block";pNum.textContent="PLAYER 1";
+}
+
+function reveal(){
+  hideAll();
+  role.textContent=rls[cur];
+  role.style.color=rls[cur]==="머더"?"var(--red)":rls[cur]==="보안관"?"var(--blue)":rls[cur]==="의사"?"var(--green)":"var(--accent)";
+  skill.textContent=aS[cur].n;skill.className=aS[cur].s||"";
+  desc.textContent=aS[cur].d;
+  result.style.display="block";
+}
+
+function next(){
+  cur++;
+  if(cur>=tP){
+    hideAll();finalScreen.style.display="block";
+    fType.textContent=rMT.n;fType.style.color=rMT.c;fDesc.textContent=rMT.d;
+    if(rMT.n==="Eden")document.body.classList.add("eden-active");
+    return;
+  }
+  hideAll();drawArea.style.display="block";pNum.textContent=`PLAYER ${cur+1}`;
+}
+
+function checkLog(){
+  if(prompt("0217:")==="0217"){logBox.innerHTML=log.join("<br>");logBox.style.display="block";}
+}
+</script>
+</body>
+</html>
